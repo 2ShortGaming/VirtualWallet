@@ -1,0 +1,107 @@
+﻿@using VirtualWallet.ViewModels
+@model ConfigureHouseVM
+
+@{
+	ViewBag.Title = "ConfigureHouse";
+	Layout = "~/Views/Shared/_AccountLayout.cshtml";
+}
+
+<h2>ConfigureHouse</h2>
+
+
+
+<div class="form-horizontal">
+	<h4>Budget</h4>
+	@using (Html.BeginForm())
+	{
+		@Html.AntiForgeryToken()
+
+		<hr />
+		@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+		@Html.HiddenFor(model => model.HouseholdId)
+		<section id="bankAccountInputs">
+
+			<div class="form-group">
+				@Html.LabelFor(model => model.BankAccount.AccountName)
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.BankAccount.AccountName, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.BankAccount.AccountName, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.LabelFor(model => model.BankAccount.AccountType)
+				<div class="col-md-10">
+					@Html.EnumDropDownListFor(model => model.BankAccount.AccountType, htmlAttributes: new { @class = "form-control" })
+					@Html.ValidationMessageFor(model => model.BankAccount.AccountType, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.LabelFor(model => model.StartingBalance)
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.StartingBalance, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.StartingBalance, "", new { @class = "text-danger" })
+				</div>
+			</div>
+			<div class="form-group">
+				@Html.LabelFor(model => model.BankAccount.WarningBalance)
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.BankAccount.WarningBalance, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.BankAccount.WarningBalance, "", new { @class = "text-danger" })
+				</div>
+			</div>
+		</section>
+
+		<section id="budgetInputs">
+			<div class="form-group">
+				@Html.LabelFor(model => model.Budget.BudgetName)
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.Budget.BudgetName, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.Budget.BudgetName, "", new { @class = "text-danger" })
+				</div>
+			</div>
+		</section>
+		<section id="budgetItemInputs">
+			<div class="form-group">
+				@Html.LabelFor(model => model.BudgetItem.ItemName)
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.BudgetItem.ItemName, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.BudgetItem.ItemName, "", new { @class = "text-danger" })
+				</div>
+			</div>
+
+			<div class="form-group">
+				@Html.LabelFor(model => model.BudgetItem.TargetAmount)
+				<div class="col-md-10">
+					@Html.EditorFor(model => model.BudgetItem.TargetAmount, new { htmlAttributes = new { @class = "form-control" } })
+					@Html.ValidationMessageFor(model => model.BudgetItem.TargetAmount, "", new { @class = "text-danger" })
+				</div>
+			</div>
+		</section>
+		<div class="form-group">
+			<div class="col-md-offset-4 text-center">
+				<input type="submit" value="Create" class="btn btn-primary" />
+			</div>
+		</div>
+		<div class="text-center mb-3">
+			<p>- OR -</p>
+		</div>
+	}
+	<div class="form-group">
+		<div class="col-md-offset-4 text-center">
+			@using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+			{
+				@Html.AntiForgeryToken()
+				<a href="javascript:document.getElementById('logoutForm').submit()" class=" btn btn-danger" id="edit-button">
+					<i class="fas fa-sign-out-alt nav-icon"></i>Log off
+				</a>
+			}
+		</div>
+	</div>
+
+
+</div>
+@section Scripts {
+	@Scripts.Render("~/bundles/jqueryval")
+}

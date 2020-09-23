@@ -1,0 +1,179 @@
+﻿@using VirtualWallet.ViewModels
+@using VirtualWallet.Utilities
+@model HouseholdDashboardVM
+
+@{
+	ViewBag.Title = "Household";
+	RoleHelper roleHelper = new RoleHelper();
+}
+<section class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				@using (Html.BeginForm("LeaveAsync", "Households"))
+				{
+				@Html.AntiForgeryToken()
+				<h1>@Model.Household.HouseholdName <button class="btn btn-danger" type="submit">Leave House</button></h1>
+				}
+			</div>
+		</div>
+	</div><!-- /.container-fluid -->
+</section>
+<section class="content">
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col">
+				<h3>Accounts</h3>
+			</div>
+		</div>
+		@if (Model.HouseAccounts.Count() < 5)
+		{
+			<div class="row">
+				@foreach (var account in Model.HouseAccounts)
+				{
+
+					<div class="col">
+						<div class="small-box bg-success">
+							<div class="inner">
+								<h3>@account.AccountName</h3>
+
+								<h4>$@account.CurrentBalance</h4>
+							</div>
+							<div class="icon">
+								<i class="fas fa-check"></i>
+							</div>
+							<a href="@Url.Action("Dashboard","BankAccounts", new { id = account.Id })" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+						</div>
+					</div>
+
+				}
+			</div>
+		}
+		else
+		{
+			<div class="row">
+				<div class="col">
+					<div class="owl-carousel">
+						@foreach (var account in Model.HouseAccounts)
+						{
+							<div class="col-lg-3 col-6">
+								<div class="small-box bg-success">
+									<div class="inner">
+										<h3>@account.AccountName</h3>
+
+										<h4>$@account.CurrentBalance</h4>
+									</div>
+									<div class="icon">
+										<i class="fas fa-check"></i>
+									</div>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		}
+		<div class="row">
+			<div class="col">
+				<div class="card">
+					<div class="card-header">
+						<h3>Users</h3>
+					</div>
+					<div class="card-body">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>
+										@Html.Label("User")
+									</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.HouseUsers)
+								{
+									<tr>
+										<td>
+											@Html.DisplayFor(modelItem => item.FullName)
+										</td>
+										<td>
+											@Html.ActionLink("Details", "UserDashboard", "Account", new { id = item.Id }, null)
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="card">
+					<div class="card-header">
+						<h3>Budgets <button class="btn btn-primary" data-toggle="modal" data-target="#modal-createbudget">Create Budget</button></h3>
+					</div>
+					<div class="card-body">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>
+										@Html.Label("Name")
+									</th>
+									<th>
+										@Html.Label("Current Amount")
+									</th>
+									<th>
+										@Html.Label("Budget Amount")
+									</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.HouseBudgets)
+								{
+									<tr>
+										<td>
+											@Html.DisplayFor(modelItem => item.BudgetName)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.CurrentAmount)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.TargetAmount)
+										</td>
+										<td>
+											@Html.ActionLink("Details", "Dashboard", "Budgets", new { id = item.Id }, null)
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<div class="modal fade" id="modal-createbudget">
+	<div class="modal-dialog">
+		<div class="modal-content bg-success">
+			<div class="modal-header">
+				<h4 class="modal-title">Create Budget</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				@Html.Action("_CreateBudgetModal", "Budgets", new { householdId = Model.Household.Id })
+			</div>
+			<div class="modal-footer justify-content-between">
+				<a href="javascript:document.getElementById('modalCreateBudgetForm').submit()" class="btn btn-primary">Send</a>
+			</div>
+		</div>
+	</div>
+	<!-- /.modal-content -->
+</div>

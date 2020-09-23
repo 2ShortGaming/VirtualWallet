@@ -12,13 +12,14 @@ namespace VirtualWallet.Models
 
         public int Id { get; set; }
 
+        [Display(Name = "Budget Item")]
         public int BudgetId { get; set; }
 
         public virtual Budget Budget { get; set; }
 
         public DateTime Created { get; set; }
 
-        [Display(Name = "Name")]
+        [Display(Name = "Budget Item Name")]
         public string ItemName { get; set; }
 
         [Display(Name = "Target Amount")]
@@ -36,6 +37,7 @@ namespace VirtualWallet.Models
         {
             Transactions = new HashSet<Transaction>();
             Created = DateTime.Now;
+            CurrentAmount = 0;
         }
 
 

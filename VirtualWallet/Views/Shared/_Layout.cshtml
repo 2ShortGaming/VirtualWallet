@@ -1,44 +1,164 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
+	@using VirtualWallet.Utilities
+	@using Microsoft.AspNet.Identity
+	@{
+		UserHelper userHelper = new UserHelper();
 
+
+		var userId = User.Identity.GetUserId();
+
+	}
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>@ViewBag.Title</title>
+
+	<!-- Google Font: Source Sans Pro -->
+	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+	<!-- Font Awesome -->
+	<link href="~/Content/all.min.css" rel="stylesheet" />
+	<!-- Theme style -->
+	<link href="~/Content/adminlte.min.css" rel="stylesheet" />
+	<link href="~/Content/owl.carousel.min.css" rel="stylesheet" />
+	<link href="~/Content/owl.theme.default.min.css" rel="stylesheet" />
+	<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/v/dt/dt-1.10.21/datatables.min.css" />
+	<link href="~/Content/Style.css" rel="stylesheet" />
 </head>
-<body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-                </ul>
-                @Html.Partial("_LoginPartial")
-            </div>
-        </div>
-    </div>
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
-    </div>
+<body class="hold-transition sidebar-mini">
+	<!-- Site wrapper -->
+	<div class="wrapper">
+		<!-- Navbar -->
+		<nav class="main-header navbar navbar-expand navbar-white navbar-light">
+			<!-- Left navbar links -->
+			<ul class="navbar-nav">
+				<li class="nav-item">
+					<a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+				</li>
+				<li class="nav-item d-none d-sm-inline-block">
+					<a href="@Url.Action("Dashboard", "Home")" class="nav-link">Home</a>
+				</li>
+				<li class="nav-item d-none d-sm-inline-block">
+					<a href="@Url.Action("About", "Home")" class="nav-link">About</a>
+				</li>
+			</ul>
+		</nav>
+		<!-- Main Sidebar Container -->
+		<aside class="main-sidebar sidebar-dark-primary elevation-4">
+			<!-- Brand Logo -->
+			<a href="@Url.Action("Dashboard", "Home")" class="brand-link">
+				<span class="brand-text font-weight-light"><i class="fas fa-money-bill-wave"></i> Virtual<b>Wallet</b></span>
+			</a>
 
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @RenderSection("scripts", required: false)
+			<!-- Sidebar -->
+			<div class="sidebar">
+				<!-- Sidebar user (optional) -->
+				<div class="user-panel mt-3 pb-3 mb-3 d-flex">
+					<div class="image">
+						<img src="@userHelper.GetAvatarPath(userId)" class="img-circle elevation-2" alt="User Image">
+					</div>
+					<div class="info">
+						<a href="@Url.Action("UserDashboard", "Account", new { id = userId })" class="d-block">@userHelper.GetFullName(userId)</a>
+					</div>
+				</div>
+
+				<!-- Sidebar Menu -->
+				<nav class="mt-2">
+					<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+						<li class="nav-item">
+							<a href="@Url.Action("Dashboard", "Home")" class="nav-link">
+								<i class="nav-icon fas fa-th"></i>
+								<p>
+									Dashboard
+								</p>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="@Url.Action("Dashboard", "Households")" class="nav-link">
+								<i class="nav-icon fas fa-home"></i>
+								<p>
+									Household
+								</p>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link bg-success" id="edit-button" data-toggle="modal" data-target="#modal-sendinvite">
+								<i class="fas fa-envelope"></i> <p>Invite User to House</p>
+							</a>
+						</li>
+						<li class="nav-item">
+							@using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+							{
+								@Html.AntiForgeryToken()
+								<a href="javascript:document.getElementById('logoutForm').submit()" class="nav-link bg-danger" id="edit-button">
+									<i class="fas fa-sign-out-alt nav-icon"></i><p>Log off</p>
+								</a>
+							}
+						</li>
+					</ul>
+				</nav>
+				<!-- /.sidebar-menu -->
+			</div>
+			<!-- /.sidebar -->
+		</aside>
+		<div class="content-wrapper">
+			<!-- Content Header (Page header) -->
+			@RenderBody()
+			<!-- /.content -->
+		</div>
+		<!-- /.content-wrapper -->
+
+		<footer class="main-footer">
+			<div class="float-right d-none d-sm-block">
+				<b>Modified by</b> Wade Cranford
+			</div>
+			<strong>Copyright &copy; 2014-2020 </strong> All rights reserved.
+		</footer>
+
+		<!-- Control Sidebar -->
+		<aside class="control-sidebar control-sidebar-dark">
+			<!-- Control sidebar content goes here -->
+		</aside>
+		<!-- /.control-sidebar -->
+	</div>
+	<!-- ./wrapper -->
+	<div class="modal fade" id="modal-sendinvite">
+		<div class="modal-dialog">
+			<div class="modal-content bg-success">
+				<div class="modal-header">
+					<h4 class="modal-title">Create Account</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					@Html.Action("_SendInviteModal", "Invitations")
+				</div>
+				<div class="modal-footer justify-content-between">
+					<a href="javascript:document.getElementById('modalSendForm').submit()" class="btn btn-primary">Send</a>
+				</div>
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+
+	<!-- jQuery -->
+	<script src="~/Scripts/jquery.min.js"></script>
+	<!-- Bootstrap 4 -->
+	<script src="~/Scripts/bootstrap.bundle.min.js"></script>
+	<!-- AdminLTE App -->
+	<script src="~/Scripts/adminlte.min.js"></script>
+	<script src="~/Scripts/owl.carousel.js"></script>
+	<script src="~/Scripts/owl.carousel.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+	<script type="text/javascript" src="//cdn.datatables.net/v/dt/dt-1.10.21/datatables.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$(".owl-carousel").owlCarousel();
+		});
+	</script>
+	<script>$('.table').DataTable();</script>
+	@RenderSection("Scripts", false)
+
 </body>
 </html>

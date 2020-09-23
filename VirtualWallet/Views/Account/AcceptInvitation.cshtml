@@ -1,0 +1,73 @@
+﻿@model VirtualWallet.Models.AcceptInvitationVM
+@{
+	ViewBag.Title = "Register";
+	Layout = "~/Views/Shared/_AccountLayout.cshtml";
+}
+
+<h2>@ViewBag.Title.</h2>
+
+@using (Html.BeginForm("AcceptInvitation", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form", enctype = "Multipart/form-data" }))
+{
+	@Html.AntiForgeryToken()
+	@Html.HiddenFor(model => model.InvitationId)
+	@Html.HiddenFor(model => model.Code)
+	@Html.HiddenFor(model => model.HouseholdId)
+	@Html.HiddenFor(model => model.Email)
+	<h4>Create a new account.</h4>
+	<hr />
+	@Html.ValidationSummary("", new { @class = "text-danger" })
+	@*<div class="form-group">
+			@Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+			<div class="col-md-10">
+				@Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+			</div>
+		</div>*@
+	<div class="form-group">
+		@Html.LabelFor(m => m.FirstName)
+		<div class="col-md-10">
+			@Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.LastName)
+		<div class="col-md-10">
+			@Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.Password)
+		<div class="col-md-10">
+			@Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@Html.LabelFor(m => m.ConfirmPassword)
+		<div class="col-md-10">
+			@Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+		</div>
+	</div>
+	<div class="form-group">
+		@*<input type="file" name="Avatar" />*@
+		<div class="custom-file">
+			<input type="file" class="custom-file-input" name="Avatar" id="customFile">
+			<label class="custom-file-label" for="customFile">Custom Avatar</label>
+		</div>
+	</div>
+	<div class="row">
+		<!-- /.col -->
+		<div class="col-12">
+			<button type="submit" class="btn btn-primary btn-block">Register</button>
+		</div>
+		<!-- /.col -->
+	</div>
+}
+
+@section Scripts {
+	@Scripts.Render("~/bundles/jqueryval")
+	<script>
+		$(".custom-file-input").on("change", function () {
+			var fileName = $(this).val().split("\\").pop();
+			$(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+		});
+	</script>
+}

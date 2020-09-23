@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Web;
+using VirtualWallet.Enums;
 
 namespace VirtualWallet.Models
 {
@@ -16,9 +17,9 @@ namespace VirtualWallet.Models
         [Display(Name = "Bank Account" )]
         public int AccountId { get; set; }
 
-        public virtual BankAccount BankAccount { get; set; }
+        public virtual BankAccount Account { get; set; }
 
-        public int? BudgetItemId { get; set; }
+        public int BudgetItemId { get; set; }
 
         public string OwnerId { get; set; }
 

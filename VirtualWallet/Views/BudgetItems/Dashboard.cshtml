@@ -1,0 +1,147 @@
+﻿@using VirtualWallet.Models
+@model BudgetItem
+@{
+	ViewBag.Title = "Virtual Wallet | Dashboard";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	var accountWarning = "";
+	if (TempData["WarningBalance"] != null)
+	{
+		accountWarning = TempData["WarningBalance"].ToString();
+	}
+}
+
+<section class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1>Budget Item Dashboard - @Model.ItemName @Html.ActionLink("Delete", "Delete", "BudgetItems", new { id = Model.Id }, new { @class = "btn btn-danger" })</h1>
+
+			</div>
+		</div>
+	</div><!-- /.container-fluid -->
+</section>
+<section class="content">
+	<div class="row">
+		<div class="col">
+			<div class="small-box bg-success">
+				<div class="inner">
+					<h3>Current Amount</h3>
+
+					<h4>$@Model.CurrentAmount</h4>
+				</div>
+				<div class="icon">
+					<i class="fas fa-check"></i>
+				</div>
+
+			</div>
+		</div>
+		<div class="col">
+			<div class="small-box bg-primary">
+				<div class="inner">
+					<h3>Target Amount</h3>
+
+					<h4>$@Model.TargetAmount</h4>
+				</div>
+				<div class="icon">
+					<i class="fas fa-dollar-sign"></i>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col">
+				<div class="card">
+					<div class="card-header">
+						<h3>Transactions <button class="btn btn-primary" data-toggle="modal" data-target="#modal-createtransaction">Create Transaction</button></h3>
+					</div>
+					<div class="card-body">
+						@if (Model.Transactions.Count() <= 0)
+						{
+							<p class="text-center">No Recent Transactions</p>
+						}
+						else
+						{
+							<table class="table">
+								<thead>
+									<tr>
+										<th>
+											@Html.Label("Description")
+										</th>
+										<th>
+											@Html.Label("Account")
+										</th>
+										<th>
+											@Html.Label("Transaction Type")
+										</th>
+										<th>
+											@Html.Label("Amount")
+										</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var item in Model.Transactions)
+									{
+										<tr>
+											<td>
+												@Html.DisplayFor(modelItem => item.Memo)
+											</td>
+											<td>
+												@Html.DisplayFor(modelItem => item.Account.AccountName)
+											</td>
+											<td>
+												@Html.DisplayFor(modelItem => item.TransactionType)
+											</td>
+											<td>
+												@Html.DisplayFor(modelItem => item.Amount)
+											</td>
+											<td>
+												@Html.ActionLink("Details", "Details", new { id = item.Id })
+											</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<div class="modal fade" id="modal-createtransaction">
+	<div class="modal-dialog">
+		<div class="modal-content bg-success">
+			<div class="modal-header">
+				<h4 class="modal-title">Create Transaction</h4>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				@Html.Action("_CreateTransactionModalFromItem", "Transactions", new { ItemId = Model.Id })
+			</div>
+			<div class="modal-footer justify-content-between">
+				<a href="javascript:document.getElementById('modalCreateTransactionForm').submit()" class="btn btn-primary">Send</a>
+			</div>
+		</div>
+	</div>
+</div>
+@section Scripts
+{
+	<script>
+	if ('@accountWarning' != "") {
+		var message = '@Html.Raw(accountWarning)';
+		Swal.fire({
+			icon: 'error',
+			title: 'Account Warning',
+			html: message
+		})
+	}
+	</script>
+}
+
+

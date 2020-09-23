@@ -5,6 +5,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Principal;
 using System.Web;
+using VirtualWallet.Enums;
+using VirtualWallet.Extentions;
 
 namespace VirtualWallet.Models
 {
@@ -12,7 +14,7 @@ namespace VirtualWallet.Models
     {
         public int Id { get; set; }
 
-        public int HouseholdId { get; set; }
+        public int? HouseholdId { get; set; }
 
         public string OwnerId { get; set; }
 
@@ -34,13 +36,15 @@ namespace VirtualWallet.Models
         [Display(Name = "Warning Balance")]
         public decimal WarningBalance { get; set; }
 
+        [Display(Name = "Delete Account")]
         public bool IsDeleted { get; set; }
 
         public virtual ICollection<Transaction> Transactions { get; set; }
 
-        public AccountType AcountType { get; set; }
+        [Display(Name = "Account type")]
+        public AccountType AccountType { get; set; }
 
-        public BankAccount( decimal startingBalance, decimal warningBalance, string accountName)
+        public BankAccount(decimal startingBalance, decimal warningBalance, string accountName)
         {
             Transactions = new HashSet<Transaction>();
             StartingBalance = startingBalance;
@@ -49,6 +53,7 @@ namespace VirtualWallet.Models
             Created = DateTime.Now;
             AccountName = accountName;
             OwnerId = HttpContext.Current.User.Identity.GetUserId();
+            HouseholdId = (int)HttpContext.Current.User.Identity.GetHouseholdId();
         }
 
         public BankAccount()

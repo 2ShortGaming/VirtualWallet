@@ -24,7 +24,7 @@ namespace VirtualWallet.Models
 
         public DateTime Created { get; set; }
 
-        [Display(Name = "Name")]
+        [Display(Name = "Budget Name")]
         public string BudgetName { get; set; }
 
         [Display(Name = "Current Amount")]
@@ -43,11 +43,16 @@ namespace VirtualWallet.Models
 
         public virtual ICollection<BudgetItem> Items { get; set; }
 
+        public Budget(bool inSeed)
+        {
+
+        }
         public Budget()
         {
             Items = new HashSet<BudgetItem>();
             Created = DateTime.Now;
             OwnerId = HttpContext.Current.User.Identity.GetUserId();
+            CurrentAmount = 0;
         }
 
 

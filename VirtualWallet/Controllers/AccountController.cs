@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using VirtualWallet.Extentions;
 using VirtualWallet.Models;
+using VirtualWallet.Utilities;
 
 namespace VirtualWallet.Controllers
 {
@@ -17,6 +22,8 @@ namespace VirtualWallet.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private RoleHelper roleHelper = new RoleHelper();
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         public AccountController()
         {
@@ -52,11 +59,20 @@ namespace VirtualWallet.Controllers
             }
         }
 
+        public ActionResult UserDashboard(string id)
+        {
+            return View(db.Users.Find(id));
+        }
+
         //
         // GET: /Account/Login
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
+            if(User.Identity.IsAuthenticated)
+            {
+                AuthorizeExtensions.AutoLogOut(HttpContext);
+            }
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
@@ -147,29 +163,156 @@ namespace VirtualWallet.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        public async Task<ActionResult> Register(ExtendedRegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+
+                var user = new ApplicationUser
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    UserName = model.Email,
+                    Email = model.Email,
+                    AvatarPath = WebConfigurationManager.AppSettings["DefaultAvatarPath"]
+                };
+
+                if (FileHelper.IsWebFriendlyImage(model.Avatar))
+                {
+                    var fileName = FileHelper.MakeUnique(model.Avatar);
+
+                    model.Avatar.SaveAs(Path.Combine(Server.MapPath("~/Avatars/"), fileName));
+                    user.AvatarPath = "/Avatars/" + fileName;
+                }
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
+                    // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
+                    // Send an email with this link
+                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code }, protocol: Request.Url.Scheme);
+                    try
+                    {
+                        var from = "VirtualWallet<Admin@VirtualWallet.com>";
+                        var email = new MailMessage(from, model.Email)
+                        {
+                            Subject = "Confirm your Account",
+                            Body = "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>",
+                            IsBodyHtml = true
+                        };
+                        var svc = new EmailService();
+                        await svc.SendAsync(email);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        await Task.FromResult(0);
+                    }
+
+
+                    return RedirectToAction("ConfirmationSent", "Account");
+                }
+                AddErrors(result);
+
+            }
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+        public ActionResult ConfirmationSent()
+        {
+            return View();
+        }
+
+        [AllowAnonymous]
+        public ActionResult AcceptInvitation(string recipientEmail, string code)
+        {
+            var realGuid = Guid.Parse(code);
+            var invitation = db.Invitations.FirstOrDefault(i => i.RecipientEmail == recipientEmail && i.Code == realGuid);
+            if (invitation == null)
+            {
+                //Need to create this fail case view - no invitation found
+                return View("NotFoundError", invitation);
+            }
+            var expirationDate = invitation.Created.AddDays(invitation.TTL);
+            if (invitation.IsValid && DateTime.Now < expirationDate)
+            {
+                var householdName = db.Households.Find(invitation.HouseholdId).HouseholdName;
+                ViewBag.Greeting = $"Thank you for accepting my invitation to join the {householdName} House!";
+                var model = new AcceptInvitationVM()
+                {
+                    InvitationId = invitation.Id,
+                    Email = recipientEmail,
+                    Code = realGuid,
+                    HouseholdId = invitation.HouseholdId
+                };
+
+                return View(model);
+            }
+            return View("AcceptError", invitation);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<ActionResult> AcceptInvitation(AcceptInvitationVM model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, HouseholdId = model.HouseholdId };
+                if (model.Avatar != null)
+                {
+                    //Run the avatar upload code from blog/bt here
+                }
+                var result = await UserManager.CreateAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    roleHelper.UpdateUserRole(user.Id, "Member");
+                    InvitationHelper.MarkAsInvalid(model.InvitationId);
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
 
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Dashboard", "Home");
                 }
                 AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form
             return View(model);
+
+        }
+
+        [Authorize(Roles = "New User")]
+        [HttpPost]
+        public async Task<ActionResult> ManualJoin(string code)
+        {
+            var user = db.Users.Find(User.Identity.GetUserId());
+            var realGuid = Guid.Parse(code);
+            var invitation = db.Invitations.FirstOrDefault(i => i.RecipientEmail == user.Email && i.Code == realGuid);
+            if (invitation == null)
+            {
+                return View("NotFoundError");
+            }
+            var expirationDate = invitation.Created.AddDays(invitation.TTL);
+            if (invitation.IsValid && DateTime.Now < expirationDate)
+            {
+                InvitationHelper.MarkAsInvalid(invitation.Id);
+                user.HouseholdId = invitation.HouseholdId;
+                roleHelper.UpdateUserRole(user.Id, "Member");
+
+                await AuthorizeExtensions.RefreshAuthentication(HttpContext, user);
+
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            return View("AcceptError", invitation);
         }
 
         //
@@ -203,7 +346,7 @@ namespace VirtualWallet.Controllers
             if (ModelState.IsValid)
             {
                 var user = await UserManager.FindByNameAsync(model.Email);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
+                if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     return View("ForgotPasswordConfirmation");
@@ -211,10 +354,26 @@ namespace VirtualWallet.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                try
+                {
+                    var from = "VirtualWallet<Admin@BugTracker.com>";
+                    var email = new MailMessage(from, model.Email)
+                    {
+                        Subject = "Reset Password",
+                        Body = "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>",
+                        IsBodyHtml = true
+                    };
+                    var svc = new EmailService();
+                    await svc.SendAsync(email);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    await Task.FromResult(0);
+                }
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             // If we got this far, something failed, redisplay form
@@ -392,7 +551,7 @@ namespace VirtualWallet.Controllers
         public ActionResult LogOff()
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard", "Home");
         }
 
         //
@@ -449,7 +608,7 @@ namespace VirtualWallet.Controllers
             {
                 return Redirect(returnUrl);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard", "Home");
         }
 
         internal class ChallengeResult : HttpUnauthorizedResult

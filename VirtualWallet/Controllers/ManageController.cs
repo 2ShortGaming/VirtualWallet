@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using VirtualWallet.Models;
+using VirtualWallet.Utilities;
 
 namespace VirtualWallet.Controllers
 {
@@ -15,6 +19,7 @@ namespace VirtualWallet.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         public ManageController()
         {
@@ -244,6 +249,60 @@ namespace VirtualWallet.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangeName(string firstName, string lastName)
+        {
+            ApplicationDbContext db = new ApplicationDbContext();
+            var userId = User.Identity.GetUserId();
+
+            db.Users.Find(userId).FirstName = firstName;
+            db.Users.Find(userId).LastName = lastName;
+            db.Entry(db.Users.Find(userId)).State = EntityState.Modified;
+            db.SaveChanges();
+
+            return RedirectToAction("UserDashboard", "Account", new { id = userId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangeAvatar(HttpPostedFileBase file)
+        {
+
+            ApplicationDbContext db = new ApplicationDbContext();
+            var userId = User.Identity.GetUserId();
+            if (file != null)
+            {
+                if (ImageUploadValidator.IsWebFriendlyImage(file))
+                {
+
+
+                    var user = db.Users.Find(userId);
+                    string fileName = FileHelper.MakeUnique(file);
+                    file.SaveAs(Path.Combine(Server.MapPath("~/Avatars/"), fileName));
+                    user.AvatarPath = $"/Avatars/{fileName}";
+                    db.SaveChanges();
+                }
+            }
+            return RedirectToAction("UserDashboard", "Account", new { id = userId });
+        }
+
+        public ActionResult UpdateProfile()
+        {
+            var user = db.Users.Find(User.Identity.GetUserId());
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult UpdateProfile(ApplicationUser model)
+        {
+            var user = db.Users.Find(model.Id);
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            db.SaveChanges();
+            return View(user);
+        }
         //
         // GET: /Manage/SetPassword
         public ActionResult SetPassword()

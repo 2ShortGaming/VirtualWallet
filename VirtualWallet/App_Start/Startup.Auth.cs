@@ -58,11 +58,11 @@ namespace VirtualWallet
             //   appId: "",
             //   appSecret: "");
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = "1064272033191-trjpmdgqichb6u5jd96b99lg17e8n0rs.apps.googleusercontent.com",
+                ClientSecret = "T1sWEJCPqhiquFLKjn2dvkTY"
+            });
         }
     }
 }

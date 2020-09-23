@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Security.Claims;
+using System.Security.Principal;
+using Microsoft.Ajax.Utilities;
+
+namespace VirtualWallet.Extentions
+{
+    public static class IdentityExtensions
+    {
+        public static int? GetHouseholdId(this IIdentity user)
+        {
+            var claimsIdentity = (ClaimsIdentity)user;
+            var householdClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "HouseholdId");
+            if (householdClaim != null)
+            {
+                var result = householdClaim.Value != "" ? int.Parse(householdClaim.Value) : 0;
+                return result;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        public static string GetFullName(this IIdentity user)
+        {
+            var claimsIdentity = (ClaimsIdentity)user;
+            var fullNameClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "FullName");
+            return fullNameClaim != null ? fullNameClaim.Value : null;
+        }
+        
+        public static string GetAvatarPath(this IIdentity user)
+        {
+            var claimsIdentity = (ClaimsIdentity)user;
+            var avatarClaim = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "AvatarPath");
+            return avatarClaim != null ? avatarClaim.Value : null;
+        }
+
+        public static bool IsInHousehold(this IIdentity user)
+        {
+            var claimsIdentity = (ClaimsIdentity)user;
+            var hhId = claimsIdentity.Claims.FirstOrDefault(c => c.Type == "HouseholdId");
+            return (hhId != null && !string.IsNullOrWhiteSpace(hhId.Value));
+        }
+    }
+}

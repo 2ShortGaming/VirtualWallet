@@ -1,0 +1,169 @@
+﻿@model VirtualWallet.Models.BankAccount
+
+@{
+	ViewBag.Title = "Account Details";
+}
+<section class="content-header">
+	<div class="container-fluid">
+		<div class="row mb-2">
+			<div class="col-sm-6">
+				<h1>@Model.AccountName</h1>
+			</div>
+		</div>
+	</div><!-- /.container-fluid -->
+</section>
+<section class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-success">
+					<div class="inner">
+						<h3>$@Model.CurrentBalance</h3>
+
+						<p>Current Balance</p>
+					</div>
+					<div class="icon">
+						<i class="fas fa-dollar-sign"></i>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-info">
+					<div class="inner">
+						<h3>@Model.Owner.FullName</h3>
+
+						<p>Account Owner</p>
+					</div>
+					<div class="icon">
+						<i class="fas fa-user"></i>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-primary">
+					<div class="inner">
+						<h3>@Model.AccountType</h3>
+
+						<p>Account Type</p>
+					</div>
+					<div class="icon">
+						<i class="fas fa-search-dollar"></i>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-warning">
+					<div class="inner">
+						<h3>$@Model.WarningBalance</h3>
+
+						<p>Warning Balance</p>
+					</div>
+					<div class="icon">
+						<i class="fas fa-exclamation-triangle"></i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				<div class="card">
+					<div class="card-header">
+						<h3>Account Transactions <button class="btn btn-primary">Add Transaction</button></h3>
+					</div>
+					<div class="card-body">
+						<table>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+<h2>Details</h2>
+
+<div>
+	<h4>BankAccount</h4>
+	<hr />
+	<dl class="dl-horizontal">
+		<dt>
+			@Html.DisplayNameFor(model => model.Household.HouseholdName)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.Household.HouseholdName)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.Owner.FirstName)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.Owner.FirstName)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.AccountName)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.AccountName)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.Created)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.Created)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.StartingBalance)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.StartingBalance)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.CurrentBalance)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.CurrentBalance)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.WarningBalance)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.WarningBalance)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.IsDeleted)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.IsDeleted)
+		</dd>
+
+		<dt>
+			@Html.DisplayNameFor(model => model.AccountType)
+		</dt>
+
+		<dd>
+			@Html.DisplayFor(model => model.AccountType)
+		</dd>
+
+	</dl>
+</div>
+<p>
+	@Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+	@Html.ActionLink("Back to List", "Index")
+</p>
